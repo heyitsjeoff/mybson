@@ -33,7 +33,7 @@ router.get('/', function(req, res){
 
   }
 
-  BSON.findById(id, function(err, doc){
+  BSON.findById(id, ('bson'),  function(err, doc){
 
     if(err){
 
@@ -46,9 +46,7 @@ router.get('/', function(req, res){
 
     }
 
-    res.json({
-      'bson': doc
-    });
+    res.json(doc.bson);
 
   });
 
@@ -89,7 +87,7 @@ router.post('/', function(req, res){
 
     res.json({
       success: true,
-      bson: b
+      id: b._id
     });
 
 
@@ -163,6 +161,76 @@ router.put('/', function(req, res){
         success: true
       });
 
+
+    });
+
+  });
+
+});
+
+router.delete('/', function(req, res){
+
+  var id = req.body.id;
+
+  if(!id){
+
+    res.status(400);
+    res.json({
+      'success': false,
+      'message': 'Missing parameter, `id` is required'
+    });
+    return;
+
+  }
+
+  // cast to mongoose id
+  try{
+
+    id = mongoose.Types.ObjectId(id);
+
+  } catch (e){
+
+    res.status(400);
+    res.json({
+      'success': false,
+      'message': 'id was not valid',
+      'exception': e.message
+    });
+    return;
+
+  }
+
+  BSON.findById(id, function(err, doc){
+
+    if(err){
+
+      res.status(400);
+      res.json({
+        'success': false,
+        'message': 'no bson exists with that id'
+      });
+      return;
+
+    }
+
+    BSON.remove(doc, function(err){
+
+        if(err){
+
+            res.status(500);
+            res.json({
+                success: false,
+                message: 'There was an error while deleting bson',
+                error: err.message
+            });
+            return;
+
+        }
+
+        res.status(200);
+        res.json({
+            success: true
+        })
 
     });
 
